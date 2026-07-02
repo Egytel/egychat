@@ -117,10 +117,10 @@ Drop your files into `public/brand-assets/` keeping the **exact same filenames**
 Edit `public/manifest.json`:
 ```json
 {
-  "name": "EgyChat",
-  "short_name": "EgyChat",
-  "background_color": "#YOUR_COLOR",
-  "theme_color": "#YOUR_COLOR"
+  "name": "Hatif Chat",
+  "short_name": "Hatif",
+  "background_color": "#2b3347",
+  "theme_color": "#659447"
 }
 ```
 
@@ -155,13 +155,13 @@ cd app/javascript/dashboard/i18n/locale/en
 # Preview changes first:
 grep -rn 'Chatwoot' . --include="*.json"
 # Apply:
-find . -name "*.json" -exec sed -i 's/Chatwoot/EgyChat/g' {} +
+find . -name "*.json" -exec sed -i 's/Chatwoot/Hatif/g' {} +
 # Then manually review each changed file to catch context-sensitive strings
 ```
 
 Also update the widget locale:
 ```bash
-sed -i 's/Powered by Chatwoot/Powered by EgyChat/g' \
+sed -i 's/Powered by Chatwoot/Powered by Egytel/g' \
   ../../../widget/i18n/locale/en.json
 ```
 
