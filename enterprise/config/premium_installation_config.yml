@@ -1,22 +1,22 @@
 # ------- Branding Related Config ------- #
 - name: INSTALLATION_NAME
-  value: 'Chatwoot'
+  value: 'Hatif Chat'
 - name: LOGO_THUMBNAIL
-  value: '/brand-assets/logo_thumbnail.svg'
+  value: '/brand-assets/logo_thumbnail.png'
 - name: LOGO
-  value: '/brand-assets/logo.svg'
+  value: '/brand-assets/logo.png'
 - name: LOGO_DARK
-  value: '/brand-assets/logo_dark.svg'
+  value: '/brand-assets/logo_dark.png'
 - name: BRAND_URL
-  value: 'https://www.chatwoot.com'
+  value: 'https://egytelecoms.com'
 - name: WIDGET_BRAND_URL
-  value: 'https://www.chatwoot.com'
+  value: 'https://egytelecoms.com'
 - name: BRAND_NAME
-  value: 'Chatwoot'
+  value: 'Hatif Chat'
 - name: TERMS_URL
-  value: 'https://www.chatwoot.com/terms-of-service'
+  value: 'https://egytelecoms.com/en/terms-of-service'
 - name: PRIVACY_URL
-  value: 'https://www.chatwoot.com/privacy-policy'
+  value: 'https://egytelecoms.com/en/privacy-policy'
 - name: DISPLAY_MANIFEST
   value: true
 # ------- End of Branding Related Config ------- #

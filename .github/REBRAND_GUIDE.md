@@ -83,17 +83,17 @@ This table lists **every file that must be touched** — nothing more.
 Edit `config/installation_config.yml`:
 ```yaml
 - name: INSTALLATION_NAME
-  value: 'EgyChat'          # ← was 'Chatwoot'
+  value: 'Hatif Chat'          # ← was 'Chatwoot'
 - name: BRAND_NAME
-  value: 'EgyChat'          # ← was 'Chatwoot'
+  value: 'Hatif Chat'          # ← was 'Chatwoot'
 - name: BRAND_URL
-  value: 'https://www.egychat.com'   # ← was 'https://www.chatwoot.com'
+  value: 'https://egytelecoms.com'   # ← was 'https://www.chatwoot.com'
 - name: WIDGET_BRAND_URL
-  value: 'https://www.egychat.com'   # ← was 'https://www.chatwoot.com'
+  value: 'https://egytelecoms.com'   # ← was 'https://www.chatwoot.com'
 - name: TERMS_URL
-  value: 'https://www.egychat.com/terms'  # ← was chatwoot.com URL
+  value: 'https://egytelecoms.com/terms'  # ← was chatwoot.com URL
 - name: PRIVACY_URL
-  value: 'https://www.egychat.com/privacy' # ← was chatwoot.com URL
+  value: 'https://egytelecoms.com/privacy' # ← was chatwoot.com URL
 - name: DISPLAY_MANIFEST
   value: false              # ← set false to hide Chatwoot metadata
 ```
