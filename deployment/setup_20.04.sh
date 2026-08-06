@@ -227,7 +227,7 @@ function install_dependencies() {
       libssl-dev libyaml-dev libreadline-dev gnupg2 \
       postgresql-client-16 redis-tools \
       nodejs patch ruby-dev zlib1g-dev liblzma-dev \
-      libgmp-dev libncurses5-dev libffi-dev libgdbm6 libgdbm-dev sudo \
+      libgmp-dev libncurses5-dev libffi-dev libgdbm6t64 libgdbm-dev sudo \
       libvips python3-pip
   npm install -g pnpm
 }
@@ -377,7 +377,7 @@ function setup_chatwoot() {
   rvm install "ruby-3.4.4"
   rvm use 3.4.4 --default
 
-  git clone https://github.com/chatwoot/chatwoot.git
+  git clone https://github.com/Egytel/egychat.git chatwoot
   cd chatwoot
   git checkout "$BRANCH"
   bundle
