@@ -7,14 +7,18 @@
 #
 #   1. Fetch the latest upstream Chatwoot `master` branch.
 #   2. Merge it into the current branch, then re-apply our branding on top.
-#   3. Run the required database migrations.
-#   4. Rebuild assets and restart services so the changes take effect.
+#   3. Install Ruby & JS dependencies for the merged code (bundle + pnpm).
+#   4. Run the required database migrations and rebuild production assets.
+#   5. Restart services so the changes take effect.
 #
 # Usage:
-#   Run from inside the Chatwoot checkout, or point CHATWOOT_DIR at it:
+#   Run as root on the server. The script operates on the deployed checkout at
+#   /home/chatwoot/chatwoot by default (where the app runs and the DB lives).
+#   Point CHATWOOT_DIR elsewhere to target a different checkout.
 #     CHATWOOT_DIR=/home/chatwoot/chatwoot ./deployment/align.sh
 #
-# Run as root (the `chatwoot` service user is used for Rails commands when present).
+# All git and Rails operations run as the `chatwoot` service user so that the
+# files it owns stay owned by chatwoot. Only the service restart needs root.
 
 set -euo pipefail
 
@@ -24,93 +28,144 @@ UPSTREAM_BRANCH="master"
 PRIVATE_BRANCH="private/main"
 BRAND_COMMIT_MSG="chore(branding): re-apply EgyChat white-label after upstream align"
 
-# The checkout to operate on. Defaults to the repo that contains this script.
-APP_DIR="${CHATWOOT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+# The checkout to operate on. Default to the deployed Chatwoot when present;
+# otherwise fall back to CHATWOOT_DIR or the repo that contains this script.
+if [ -n "${CHATWOOT_DIR:-}" ]; then
+  APP_DIR="$CHATWOOT_DIR"
+elif [ "$(id -u)" -eq 0 ] && id -u chatwoot >/dev/null 2>&1 && [ -d /home/chatwoot/chatwoot/.git ]; then
+  APP_DIR="/home/chatwoot/chatwoot"
+else
+  APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+fi
+
+# When running as root on a server with a `chatwoot` user, run repo/Rails
+# commands as chatwoot so files stay owned by the service user.
+CW_USER=""
+if [ "$(id -u)" -eq 0 ] && id -u chatwoot >/dev/null 2>&1; then
+  CW_USER="chatwoot"
+fi
 
 log() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 die() { printf '\n\033[1;31mERROR: %s\033[0m\n' "$*" >&2; exit 1; }
 
-cd "$APP_DIR"
+# Run a git command in $APP_DIR, as the chatwoot user when needed.
+# NOTE: uses `sudo -u ... -H` (no login shell) so git output stays clean.
+git_() {
+  if [ -n "$CW_USER" ]; then
+    sudo -u "$CW_USER" -H git -C "$APP_DIR" "$@"
+  else
+    git -C "$APP_DIR" "$@"
+  fi
+}
 
-# --- sanity checks -------------------------------------------------------------
-[ -d .git ] || die "not a git repository: $APP_DIR"
-git rev-parse --verify "$PRIVATE_BRANCH" >/dev/null 2>&1 || \
-  die "branch '$PRIVATE_BRANCH' not found locally; fetch it first (git fetch origin $PRIVATE_BRANCH)"
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  die "working tree is not clean; commit or stash your changes before aligning"
-fi
-CURRENT_BRANCH="$(git branch --show-current)"
-echo "Aligning branch '$CURRENT_BRANCH' in $APP_DIR"
-
-# --- 1. Fetch upstream master --------------------------------------------------
-log "1/4 Fetching upstream Chatwoot ($UPSTREAM_BRANCH)"
-if ! git remote get-url "$UPSTREAM_REMOTE" >/dev/null 2>&1; then
-  git remote add "$UPSTREAM_REMOTE" "$UPSTREAM_URL"
-fi
-git fetch "$UPSTREAM_REMOTE" "$UPSTREAM_BRANCH"
-UPSTREAM_REF="$UPSTREAM_REMOTE/$UPSTREAM_BRANCH"
-
-# Branding / white-label = every file our branch changes relative to upstream.
-BASE="$(git merge-base "$PRIVATE_BRANCH" "$UPSTREAM_REF")"
-[ -n "$BASE" ] || die "no common ancestor between $PRIVATE_BRANCH and $UPSTREAM_REF"
-mapfile -d '' -t BRANDING_FILES < <(git diff --name-only -z "$BASE" "$PRIVATE_BRANCH")
-echo "Tracking ${#BRANDING_FILES[@]} branding/white-label file(s)."
-
-# --- 2. Merge upstream, then re-apply branding --------------------------------
-log "2/4 Merging $UPSTREAM_REF into '$CURRENT_BRANCH'"
-# Snapshot our branding before the merge so we can restore it afterwards.
-PRE_MERGE_REF="refs/align/pre-merge"
-git update-ref "$PRE_MERGE_REF" HEAD
-
-if ! git merge "$UPSTREAM_REF" --no-edit; then
-  echo "Merge reported conflicts; they will be resolved by re-applying branding."
-fi
-
-log "Re-applying branding/white-label from $PRIVATE_BRANCH"
-if [ "${#BRANDING_FILES[@]}" -gt 0 ]; then
-  git checkout "$PRE_MERGE_REF" -- "${BRANDING_FILES[@]}"
-fi
-git update-ref -d "$PRE_MERGE_REF"
-
-git add -A
-# Any remaining unmerged (non-branding) files must be resolved by hand.
-if git ls-files -u | grep -q .; then
-  git ls-files -u
-  die "unresolved merge conflicts remain; resolve them manually and commit"
-fi
-
-if git diff --cached --quiet; then
-  echo "No branding changes to commit."
-else
-  git commit -m "$BRAND_COMMIT_MSG"
-fi
-
-# --- Rails command helper (runs as the `chatwoot` user when present) -----------
-run_rails() {
+# Run a Rails command in $APP_DIR, as the chatwoot user (login shell loads RVM).
+rails_() {
   local cmd="$1"
-  if [ "$(id -u)" -eq 0 ] && id -u chatwoot >/dev/null 2>&1; then
-    sudo -i -u chatwoot bash -lc "cd '$APP_DIR' && $cmd"
+  if [ -n "$CW_USER" ]; then
+    sudo -i -u "$CW_USER" bash -lc "cd '$APP_DIR' && $cmd"
   else
     bash -lc "cd '$APP_DIR' && $cmd"
   fi
 }
 
-# --- 3. Run database migrations ------------------------------------------------
-log "3/4 Running database migrations"
-run_rails 'RAILS_ENV=production POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:migrate'
+restart_chatwoot() {
+  local unit=""
+  if [ -f /etc/systemd/system/chatwoot.target ]; then
+    unit="chatwoot.target"
+  elif [ -f /etc/systemd/system/chatwoot-web.target ]; then
+    unit="chatwoot-web.target"
+  fi
 
-# --- 4. Rebuild assets + restart services --------------------------------------
-log "4/4 Rebuilding assets (so branding takes effect) and restarting services"
-run_rails 'RAILS_ENV=production NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" bundle exec rails assets:precompile'
+  if [ -n "$unit" ]; then
+    if [ "$(id -u)" -eq 0 ]; then
+      /bin/systemctl restart "$unit"
+    else
+      sudo /bin/systemctl restart "$unit"
+    fi
+    echo "Restarted $unit"
+  else
+    echo "No Chatwoot systemd target found; restart the app manually."
+  fi
+}
 
-if [ -f /etc/systemd/system/chatwoot.target ]; then
-  systemctl restart chatwoot.target
-  echo "Restarted chatwoot.target"
-elif [ -f /etc/systemd/system/chatwoot-web.target ]; then
-  systemctl restart chatwoot-web.target
-  echo "Restarted chatwoot-web.target"
-else
-  echo "No Chatwoot systemd target found; restart the app manually."
+# --- sanity checks -------------------------------------------------------------
+[ -d "$APP_DIR/.git" ] || die "not a git repository: $APP_DIR"
+git_ rev-parse --verify "$PRIVATE_BRANCH" >/dev/null 2>&1 || \
+  die "branch '$PRIVATE_BRANCH' not found; fetch it first (git fetch origin $PRIVATE_BRANCH)"
+if ! git_ diff --quiet || ! git_ diff --cached --quiet; then
+  die "working tree is not clean; commit or stash your changes before aligning"
 fi
+CURRENT_BRANCH="$(git_ branch --show-current)"
+echo "Aligning branch '$CURRENT_BRANCH' in $APP_DIR"
+
+# Ensure a git identity is configured for the merge/branding commits.
+if [ -z "$(git_ config user.email)" ]; then
+  git_ config user.name "Chatwoot Deploy"
+  git_ config user.email "deploy@$(hostname)"
+  echo "Configured git identity for commits."
+fi
+
+# --- 1. Fetch upstream master --------------------------------------------------
+log "1/5 Fetching upstream Chatwoot ($UPSTREAM_BRANCH)"
+if ! git_ remote get-url "$UPSTREAM_REMOTE" >/dev/null 2>&1; then
+  git_ remote add "$UPSTREAM_REMOTE" "$UPSTREAM_URL"
+fi
+git_ fetch "$UPSTREAM_REMOTE" "$UPSTREAM_BRANCH"
+UPSTREAM_REF="$UPSTREAM_REMOTE/$UPSTREAM_BRANCH"
+
+# Branding / white-label = every file our branch changes relative to upstream.
+BASE="$(git_ merge-base "$PRIVATE_BRANCH" "$UPSTREAM_REF")"
+[ -n "$BASE" ] || die "no common ancestor between $PRIVATE_BRANCH and $UPSTREAM_REF"
+mapfile -d '' -t BRANDING_FILES < <(git_ diff --name-only -z "$BASE" "$PRIVATE_BRANCH")
+echo "Tracking ${#BRANDING_FILES[@]} branding/white-label file(s)."
+
+# --- 2. Merge upstream, then re-apply branding --------------------------------
+log "2/5 Merging $UPSTREAM_REF into '$CURRENT_BRANCH'"
+# Snapshot our branding before the merge so we can restore it afterwards.
+PRE_MERGE_REF="refs/align/pre-merge"
+git_ update-ref "$PRE_MERGE_REF" HEAD
+
+if ! git_ merge "$UPSTREAM_REF" --no-edit; then
+  if git_ ls-files -u | grep -q .; then
+    echo "Merge conflicts detected; they will be resolved by re-applying branding."
+  else
+    die "git merge failed (not due to conflicts). Aborting."
+  fi
+fi
+
+log "Re-applying branding/white-label from $PRIVATE_BRANCH"
+if [ "${#BRANDING_FILES[@]}" -gt 0 ]; then
+  git_ checkout "$PRE_MERGE_REF" -- "${BRANDING_FILES[@]}"
+fi
+git_ update-ref -d "$PRE_MERGE_REF"
+
+git_ add -A
+# Any remaining unmerged (non-branding) files must be resolved by hand.
+if git_ ls-files -u | grep -q .; then
+  git_ ls-files -u
+  die "unresolved merge conflicts remain; resolve them manually and commit"
+fi
+
+if git_ diff --cached --quiet; then
+  echo "No branding changes to commit."
+else
+  git_ commit -m "$BRAND_COMMIT_MSG"
+fi
+
+# --- 3. Install dependencies (required after merging new upstream code) ---------
+log "3/5 Installing Ruby and JS dependencies"
+rails_ 'bundle install'
+rails_ 'pnpm install'
+
+# --- 4. Migrate DB + rebuild assets ---------------------------------------------
+log "4/5 Running database migrations"
+rails_ 'RAILS_ENV=production POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:migrate'
+
+log "Rebuilding assets (so branding takes effect)"
+rails_ 'RAILS_ENV=production NODE_OPTIONS="--max-old-space-size=4096 --openssl-legacy-provider" bundle exec rails assets:precompile'
+
+# --- 5. Restart services ---------------------------------------------------------
+log "5/5 Restarting services"
+restart_chatwoot
 
 log "Align complete: upstream $UPSTREAM_BRANCH + EgyChat branding."
