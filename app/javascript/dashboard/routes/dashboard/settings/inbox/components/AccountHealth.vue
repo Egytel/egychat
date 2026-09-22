@@ -365,9 +365,14 @@ const webhookUrl = computed(
 
 const webhookConfigured = computed(() => !!webhookUrl.value);
 
+const webhookManagedExternally = computed(
+  () => props.healthData?.webhook_managed_externally === true
+);
+
 const webhookUrlMismatch = computed(
   () =>
     webhookConfigured.value &&
+    !webhookManagedExternally.value &&
     webhookUrl.value !== props.healthData?.expected_webhook_url
 );
 
@@ -486,7 +491,19 @@ const handleCopyWebhookUrl = async url => {
           </div>
           <div class="flex items-center justify-between gap-3">
             <span
-              v-if="webhookConfigured && !webhookUrlMismatch"
+              v-if="webhookManagedExternally"
+              v-tooltip.top="
+                t(
+                  'INBOX_MGMT.ACCOUNT_HEALTH.WEBHOOK.MANAGED_EXTERNALLY_DESCRIPTION'
+                )
+              "
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 min-h-6 text-label-small rounded-md bg-n-alpha-2 text-n-slate-11"
+            >
+              <Icon icon="i-lucide-external-link" class="w-3.5 h-3.5" />
+              {{ t('INBOX_MGMT.ACCOUNT_HEALTH.WEBHOOK.MANAGED_EXTERNALLY') }}
+            </span>
+            <span
+              v-else-if="webhookConfigured && !webhookUrlMismatch"
               class="inline-flex items-center gap-1.5 px-2 py-0.5 min-h-6 text-label-small rounded-md bg-n-alpha-2 text-n-teal-11"
             >
               <Icon icon="i-lucide-check-circle" class="w-3.5 h-3.5" />
@@ -504,7 +521,10 @@ const handleCopyWebhookUrl = async url => {
               }}
             </span>
             <ButtonV4
-              v-if="!webhookConfigured || webhookUrlMismatch"
+              v-if="
+                !webhookManagedExternally &&
+                (!webhookConfigured || webhookUrlMismatch)
+              "
               sm
               solid
               blue

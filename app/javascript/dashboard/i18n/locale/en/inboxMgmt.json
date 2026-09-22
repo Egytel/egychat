@@ -743,7 +743,13 @@
         "REGISTER_SUCCESS": "Webhook registered successfully",
         "REGISTER_ERROR": "Failed to register webhook. Please try again.",
         "CONFIGURED_SUCCESS": "Webhook configured successfully",
-        "URL_MISMATCH": "Webhook URL mismatch"
+        "URL_MISMATCH": "Webhook URL mismatch",
+        "CONFIGURED_URL": "Configured URL",
+        "EXPECTED_URL": "Expected URL",
+        "COPY_URL": "Copy URL",
+        "COPY_SUCCESS": "URL copied to clipboard",
+        "MANAGED_EXTERNALLY": "Webhook managed externally",
+        "MANAGED_EXTERNALLY_DESCRIPTION": "Webhooks are received and forwarded by an external service, so Chatwoot does not manage the Meta callback URL."
       }
     },
     "SETTINGS": "Settings",

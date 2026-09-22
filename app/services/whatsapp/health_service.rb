@@ -14,6 +14,8 @@ class Whatsapp::HealthService
     end
   end
 
+  include Whatsapp::WebhookManagedExternally
+
   BASE_URI = 'https://graph.facebook.com'.freeze
   MINIMUM_HEALTH_API_VERSION = 24.0
   PERSISTED_FIELDS = %i[
@@ -146,7 +148,8 @@ class Whatsapp::HealthService
       account_mode: phone_response['account_mode'],
       code_verification_status: phone_response['code_verification_status'],
       webhook_configuration: phone_response['webhook_configuration'],
-      expected_webhook_url: build_expected_webhook_url,
+      expected_webhook_url: webhook_managed_externally? ? nil : build_expected_webhook_url,
+      webhook_managed_externally: webhook_managed_externally?,
       throughput: phone_response['throughput'],
       throughput_level: phone_response.dig('throughput', 'level'),
       last_onboarded_time: phone_response['last_onboarded_time'],

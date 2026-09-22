@@ -15,7 +15,7 @@
 
 # ------- Branding Related Config ------- #
 - name: INSTALLATION_NAME
-  value: 'Hatif Chat'
+  value: 'Hatif'
   display_title: 'Installation Name'
   description: 'The installation wide name that would be used in the dashboard, title etc.'
 - name: LOGO_THUMBNAIL
@@ -39,7 +39,7 @@
   display_title: 'Widget Brand URL'
   description: 'The URL that would be used in the widget under the section “Powered By”'
 - name: BRAND_NAME
-  value: 'Hatif Chat'
+  value: 'Hatif'
   display_title: 'Brand Name'
   description: 'The name that would be used in emails and the widget'
 - name: TERMS_URL
@@ -166,8 +166,14 @@
 - name: WHATSAPP_API_VERSION
   display_title: 'WhatsApp API Version'
   description: 'Configure this if you want to use a different WhatsApp API version. Make sure its prefixed with `v`'
-  value: 'v22.0'
+  value: 'v25.0'
   locked: false
+- name: WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY
+  display_title: 'WhatsApp Webhook Managed Externally'
+  description: 'Enable when a centralized endpoint receives Meta webhooks and forwards them to Chatwoot, so the Meta callback URL is not expected to match this installation URL.'
+  value: true
+  locked: false
+  type: boolean
 # ------- End of WhatsApp Channel Related Config ------- #
 
 # MARK: Microsoft Email Channel Config

@@ -1,4 +1,6 @@
 class Whatsapp::WebhookTeardownService
+  include Whatsapp::WebhookManagedExternally
+
   def initialize(channel)
     @channel = channel
   end
@@ -23,6 +25,8 @@ class Whatsapp::WebhookTeardownService
   end
 
   def should_teardown_webhook?
+    return false if webhook_managed_externally?
+
     @channel.provider == 'whatsapp_cloud' &&
       provider_config['api_key'].present? &&
       (provider_config['phone_number_id'].present? || provider_config['business_account_id'].present?)

@@ -1,4 +1,6 @@
 class Whatsapp::WebhookSetupService
+  include Whatsapp::WebhookManagedExternally
+
   def initialize(channel, waba_id = nil, access_token = nil)
     @channel = channel
     @waba_id = waba_id || channel.provider_config['business_account_id']
@@ -61,7 +63,16 @@ class Whatsapp::WebhookSetupService
     verify_token = @channel.provider_config['webhook_verify_token']
     phone_number_id = @channel.provider_config['phone_number_id']
 
-    @api_client.subscribe_phone_number_webhook(@waba_id, phone_number_id, callback_url, verify_token, subscribed_fields: subscribed_fields)
+    # The app must be subscribed to the WABA even when a centralized router owns the callback URL:
+    # without a WABA subscription Meta delivers no events at all for this number, and the router
+    # never sees them (new embedded-signup numbers silently received nothing).
+    @api_client.subscribe_app_to_waba(@waba_id, subscribed_fields: subscribed_fields)
+
+    # When the router is the Meta-facing endpoint, never write a per-number override URL —
+    # the router stays the single callback and resolves the tenant itself.
+    return if webhook_managed_externally?
+
+    @api_client.override_phone_number_callback(phone_number_id, callback_url, verify_token)
   rescue StandardError => e
     Rails.logger.error("[WHATSAPP] Webhook setup failed: #{e.message}")
     raise "Webhook setup failed: #{e.message}"
