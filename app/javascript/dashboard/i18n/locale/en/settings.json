@@ -100,6 +100,7 @@
       "ACCESS_TOKEN": {
         "TITLE": "Access Token",
         "NOTE": "This token can be used if you are building an API based integration",
+        "PAID_PLAN_NOTE": "API access tokens are available on paid plans.",
         "COPY": "Copy",
         "RESET": "Reset",
         "CONFIRM_RESET": "Are you sure?",
@@ -263,7 +264,8 @@
     "EMAIL_VERIFICATION_SENT": "Verification email has been sent. Please check your inbox.",
     "ACCOUNT_SUSPENDED": {
       "TITLE": "Account Suspended",
-      "MESSAGE": "Your account is suspended. Please reach out to the support team for more information."
+      "MESSAGE": "Your account is suspended. Please reach out to the support team for more information.",
+      "MANAGE_BILLING": "Manage billing"
     },
     "NO_ACCOUNTS": {
       "TITLE": "No account found",
@@ -324,7 +326,9 @@
     "COMPANIES": "Companies",
     "ALL_COMPANIES": "All Companies",
     "CAPTAIN": "Captain",
+    "CALLS": "Calls",
     "CAPTAIN_ASSISTANTS": "Assistants",
+    "CAPTAIN_OVERVIEW": "Overview",
     "CAPTAIN_DOCUMENTS": "Documents",
     "CAPTAIN_RESPONSES": "FAQs",
     "CAPTAIN_TOOLS": "Tools",
@@ -341,6 +345,7 @@
     "NOTIFICATIONS": "Notifications",
     "CANNED_RESPONSES": "Canned Responses",
     "INTEGRATIONS": "Integrations",
+    "DATA": "Data",
     "PROFILE_SETTINGS": "Profile Settings",
     "ACCOUNT_SETTINGS": "Account Settings",
     "APPLICATIONS": "Applications",
@@ -553,7 +558,9 @@
       "DESCRIPTION": "Enable or disable AI-powered features.",
       "AUDIO_TRANSCRIPTION": {
         "TITLE": "Audio Transcription",
-        "DESCRIPTION": "Automatically convert voice messages and call recordings into searchable text transcripts."
+        "DESCRIPTION": "Automatically convert voice messages and call recordings into searchable text transcripts.",
+        "MODEL_TITLE": "Audio Transcription Model",
+        "MODEL_DESCRIPTION": "Select the AI model to use for converting audio messages into text transcripts"
       },
       "HELP_CENTER_SEARCH": {
         "TITLE": "Help Center Search Indexing",
@@ -658,6 +665,7 @@
       "PURCHASE": "Purchase Credits",
       "LOADING": "Loading options...",
       "FETCH_ERROR": "Failed to load credit options. Please try again.",
+      "RETRY": "Retry",
       "PURCHASE_ERROR": "Failed to process purchase. Please try again.",
       "PURCHASE_SUCCESS": "Successfully added {credits} credits to your account",
       "CONFIRM": {
@@ -958,6 +966,10 @@
           "DESCRIPTION": "Set the maximum number of conversations that can be assigned per agent within a time window to avoid overloading any one agent. This required field defaults to 100 conversations per hour.",
           "INPUT_MAX": "Assign max",
           "DURATION": "Conversations per agent in every"
+        },
+        "EXCLUDE_OLDER_THAN": {
+          "LABEL": "Skip stale conversations",
+          "DESCRIPTION": "Skip unassigned conversations older than this. Defaults to 7 days; clear to disable."
         },
         "INBOXES": {
           "LABEL": "Added inboxes",

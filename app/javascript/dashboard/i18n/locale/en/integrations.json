@@ -36,6 +36,13 @@
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Subscribed Events",
       "LEARN_MORE": "Learn more about webhooks",
+      "PAYWALL": {
+        "TITLE": "Webhooks are available on paid plans",
+        "AVAILABLE_ON": "Use webhooks to receive real-time events from your Hatif account.",
+        "UPGRADE_PROMPT": "Upgrade to the Startups, Business, or Enterprise plan to use webhooks.",
+        "UPGRADE_NOW": "Upgrade now",
+        "CANCEL_ANYTIME": "Change or cancel your plan anytime."
+      },
       "SECRET": {
         "LABEL": "Secret",
         "COPY": "Copy secret to clipboard",
@@ -774,10 +781,6 @@
           "PLACEHOLDER": "Enter assistant name",
           "ERROR": "The name is required"
         },
-        "TEMPERATURE": {
-          "LABEL": "Response Temperature",
-          "DESCRIPTION": "Adjust how creative or restrictive the assistant's responses should be. Lower values produce more focused and deterministic responses, while higher values allow for more creative and varied outputs."
-        },
         "DESCRIPTION": {
           "LABEL": "Description",
           "PLACEHOLDER": "Enter assistant description",
@@ -883,6 +886,10 @@
             "DESC": "Captain responds only when each inbox is closed."
           },
           "HINT": "Inboxes without business hours configured are always covered."
+        },
+        "TEMPERATURE": {
+          "LABEL": "Response Temperature",
+          "DESCRIPTION": "Adjust how creative or restrictive the assistant's responses should be. Lower values produce more focused and deterministic responses, while higher values allow for more creative and varied outputs."
         }
       },
       "EDIT": {
@@ -1234,12 +1241,12 @@
         "SUCCESS_MESSAGE": "The document has been successfully deleted",
         "ERROR_MESSAGE": "There was an error deleting the document, please try again."
       },
-
       "OPTIONS": {
-        "VIEW_RELATED_RESPONSES": "View Related Responses",
+        "VIEW_DETAILS": "View details",
         "SYNC_NOW": "Refresh now",
         "RETRY_SYNC": "Retry refresh",
-        "DELETE_DOCUMENT": "Delete Document"
+        "DELETE_DOCUMENT": "Delete Document",
+        "VIEW_RELATED_RESPONSES": "View Related Responses"
       },
       "EMPTY_STATE": {
         "TITLE": "No documents available",
@@ -1399,7 +1406,6 @@
     },
     "RESPONSES": {
       "HEADER": "FAQs",
-      "PENDING_FAQS": "Pending FAQs",
       "ADD_NEW": "Create new FAQ",
       "NO_USED_CONVERSATIONS": "No conversations found for this FAQ.",
       "DOCUMENTABLE": {
@@ -1409,12 +1415,10 @@
       "SELECT_ALL": "Select all ({count})",
       "UNSELECT_ALL": "Unselect all ({count})",
       "SEARCH_PLACEHOLDER": "Search FAQs...",
-      "BULK_APPROVE_BUTTON": "Approve",
-      "BULK_DELETE_BUTTON": "Delete",
-      "BULK_APPROVE": {
-        "SUCCESS_MESSAGE": "FAQs approved successfully",
-        "ERROR_MESSAGE": "There was an error approving the FAQs, please try again."
+      "ERRORS": {
+        "LOAD": "There was an error loading FAQs. Please try again."
       },
+      "BULK_DELETE_BUTTON": "Delete",
       "BULK_DELETE": {
         "TITLE": "Delete FAQs?",
         "DESCRIPTION": "Are you sure you want to delete the selected FAQs? This action cannot be undone.",
@@ -1429,20 +1433,9 @@
         "SUCCESS_MESSAGE": "FAQ deleted successfully",
         "ERROR_MESSAGE": "There was an error deleting the FAQ, please try again."
       },
-      "FILTER": {
-        "ASSISTANT": "Assistant: {selected}",
-        "STATUS": "Status: {selected}",
-        "ALL_ASSISTANTS": "All"
-      },
-      "STATUS": {
-        "TITLE": "Status",
-        "PENDING": "Pending",
-        "APPROVED": "Approved",
-        "ALL": "All"
-      },
-      "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
-        "ACTION": "Click here to review"
+      "SUGGESTIONS_BANNER": {
+        "TITLE": "Captain grouped recurring customer questions into FAQ suggestions.",
+        "ACTION": "Review suggestions"
       },
       "FORM_DESCRIPTION": "Add a question and its corresponding answer to the knowledge base and select the assistant it should be associated with.",
       "CREATE": {
@@ -1475,13 +1468,71 @@
       },
       "EMPTY_STATE": {
         "TITLE": "No FAQs Found",
-        "NO_PENDING_TITLE": "There are no more pending FAQs to review",
         "SUBTITLE": "FAQs help your assistant provide quick and accurate answers to questions from your customers. They can be generated automatically from your content or can be added manually.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
           "TITLE": "Captain FAQ",
           "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
-        }
+        },
+        "NO_PENDING_TITLE": "There are no more pending FAQs to review"
+      },
+      "PENDING_FAQS": "Pending FAQs",
+      "BULK_APPROVE_BUTTON": "Approve",
+      "BULK_APPROVE": {
+        "SUCCESS_MESSAGE": "FAQs approved successfully",
+        "ERROR_MESSAGE": "There was an error approving the FAQs, please try again."
+      },
+      "FILTER": {
+        "ASSISTANT": "Assistant: {selected}",
+        "STATUS": "Status: {selected}",
+        "ALL_ASSISTANTS": "All"
+      },
+      "STATUS": {
+        "TITLE": "Status",
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "ALL": "All"
+      },
+      "PENDING_BANNER": {
+        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "ACTION": "Click here to review"
+      }
+    },
+    "FAQ_SUGGESTIONS": {
+      "HEADER": "FAQ suggestions",
+      "SEARCH_PLACEHOLDER": "Search suggestions...",
+      "QUEUE_COUNT": "{count} suggestion to review | {count} suggestions to review",
+      "QUEUE_HINT": "Ranked by customer demand",
+      "SOURCE_COUNT": "{count} conversation | {count} conversations",
+      "REVIEW": "Review sources",
+      "APPROVE": "Approve",
+      "APPROVE_FAQ": "Approve FAQ",
+      "DISMISS": "Dismiss",
+      "SAVE": "Save changes",
+      "DETAILS": {
+        "TITLE": "Review FAQ suggestion",
+        "DESCRIPTION": "Captain grouped {count} conversation into this suggestion. Review the evidence and refine the FAQ before approval. | Captain grouped {count} conversations into this suggestion. Review the evidence and refine the FAQ before approval.",
+        "SOURCES": "Source conversations",
+        "SOURCE_PROGRESS": "{visible} of {total}",
+        "NO_SOURCES": "No accessible source conversations were found.",
+        "RETRY": "Retry"
+      },
+      "EMPTY_STATE": {
+        "TITLE": "The review queue is clear",
+        "SUBTITLE": "New FAQ suggestions will appear here when they are ready to review.",
+        "CLEAR_SEARCH": "Clear search"
+      },
+      "SUCCESS": {
+        "APPROVED": "FAQ approved and added to Captain's knowledge.",
+        "DISMISSED": "Suggestion dismissed.",
+        "SAVED": "Suggestion updated."
+      },
+      "ERRORS": {
+        "LOAD": "There was an error loading FAQ suggestions. Please try again.",
+        "LOAD_DETAILS": "There was an error loading the source conversations.",
+        "APPROVE": "There was an error approving the FAQ. Please try again.",
+        "DISMISS": "There was an error dismissing the suggestion. Please try again.",
+        "SAVE": "There was an error saving the suggestion. Please try again."
       }
     },
     "INBOXES": {
