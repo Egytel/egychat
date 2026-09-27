@@ -51,6 +51,24 @@ echo "== Super Admin config plumbing =="
 grep_present config/installation_config.yml 'WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY' "WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY defined in installation_config.yml"
 grep_present app/controllers/super_admin/app_configs_controller.rb 'WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY' "WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY editable from Super Admin"
 
+echo "== Softphone dock (phase 1: session tokens) =="
+grep_present app/services/softphone/config.rb 'SOFTPHONE_IFRAME_URL' "Softphone::Config reads the dock settings"
+grep_present app/services/softphone/token_service.rb 'AUDIENCE' "Softphone::TokenService defines the token audience"
+grep_present app/services/softphone/token_service.rb 'consume!' "Softphone::TokenService enforces single use"
+grep_present app/controllers/api/v1/accounts/softphone/sessions_controller.rb 'softphone_disabled' "session endpoint refuses unmarked agents"
+grep_present app/controllers/api/v1/accounts/softphone/sessions_controller.rb 'mint_token' "session endpoint mints through mint_token (not the shadowed name 'token')"
+grep_present config/routes.rb 'namespace :softphone' "softphone session route present"
+grep_present config/installation_config.yml 'SOFTPHONE_ENABLED' "SOFTPHONE_ENABLED defined in installation_config.yml"
+grep_present app/views/api/v1/models/_user.json.jbuilder 'json.softphone_enabled' "current user is told about softphone access"
+grep_present app/views/api/v1/models/_agent.json.jbuilder 'json.softphone_enabled' "agents list exposes softphone access"
+grep_present app/controllers/api/v1/accounts/agents_controller.rb 'softphone_enabled if current_user.administrator?' "only administrators can grant softphone access"
+grep_present app/models/user.rb 'softphone_enabled' "user model annotation mentions the column"
+if ls db/migrate/*_add_softphone_enabled_to_users.rb >/dev/null 2>&1; then
+  ok "the softphone_enabled migration is present"
+else
+  fail "the softphone_enabled migration is missing"
+fi
+
 echo "== Branding =="
 file_differs_from_upstream public/brand-assets/logo.svg "Hatif logo.svg differs from upstream"
 file_differs_from_upstream public/brand-assets/logo_dark.svg "Hatif logo_dark.svg differs from upstream"

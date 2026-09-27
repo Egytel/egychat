@@ -276,6 +276,10 @@ Rails.application.routes.draw do
 
           if ChatwootApp.enterprise?
             resources :calls, only: [:index]
+
+          namespace :softphone do
+            resource :session, only: [:create], controller: 'sessions'
+          end
             resources :whatsapp_calls, only: [:show] do
               member do
                 post :accept

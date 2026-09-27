@@ -23,7 +23,7 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
   end
 
   def update
-    @agent.update!(agent_params.slice(:name).compact)
+    @agent.update!(agent_params.slice(:name, :softphone_enabled).compact)
     @agent.current_account_user.update!(agent_params.slice(*account_user_attributes).compact)
   end
 
@@ -60,7 +60,11 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
   end
 
   def allowed_agent_params
-    [:name, :email, :role, :availability, :auto_offline]
+    attributes = [:name, :email, :role, :availability, :auto_offline]
+    # Only administrators decide who gets a softphone session; a plain agent sending the
+    # flag is silently ignored because it never reaches the permit list.
+    attributes << :softphone_enabled if current_user.administrator?
+    attributes
   end
 
   def agent_params

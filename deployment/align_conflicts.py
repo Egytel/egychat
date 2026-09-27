@@ -59,6 +59,24 @@ POLICY = {
 }
 
 
+# Files where the fork adds a small amount of code to a large upstream file. A merge that
+# touches our additions is NOT auto-resolvable by policy (union would concatenate whole
+# sides and corrupt the file) - the resolver stops and a human keeps our hunk. These are the
+# paths to look at when it aborts, and verify_customizations.sh asserts each one survived:
+#   config/routes.rb                                     -> namespace :softphone route
+#   app/controllers/api/v1/accounts/agents_controller.rb  -> softphone_enabled is admin-only
+#   app/views/api/v1/models/_user.json.jbuilder           -> exposes softphone_enabled
+#   app/views/api/v1/models/_agent.json.jbuilder          -> exposes softphone_enabled
+#   app/models/user.rb                                    -> softphone_enabled annotation
+#   db/schema.rb                                          -> version + softphone_enabled column
+HAND_RESOLVE_HINTS = {
+    "config/routes.rb": "keep the softphone namespace (POST :account_id/softphone/session)",
+    "app/controllers/api/v1/accounts/agents_controller.rb": "keep :softphone_enabled, admin-only",
+    "app/views/api/v1/models/_user.json.jbuilder": "keep json.softphone_enabled",
+    "app/views/api/v1/models/_agent.json.jbuilder": "keep json.softphone_enabled",
+}
+
+
 def policy_for(path):
     if path in POLICY:
         return POLICY[path]
