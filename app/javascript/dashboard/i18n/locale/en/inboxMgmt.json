@@ -299,7 +299,7 @@
         "MANUAL_SETUP": {
           "HEADER": {
             "TITLE": "Connect WhatsApp manually",
-            "DESCRIPTION": "Follow these steps to prepare your Meta account and connect your number to Chatwoot."
+            "DESCRIPTION": "Follow these steps to prepare your Meta account and connect your number to Hatif."
           },
           "APP": {
             "TITLE": "Create or select a Meta app",
@@ -358,7 +358,7 @@
           },
           "VERIFY": {
             "TITLE": "Verify your connection",
-            "DESCRIPTION": "Chatwoot is checking number access and configuring your Meta webhook.",
+            "DESCRIPTION": "Hatif is checking number access and configuring your Meta webhook.",
             "NUMBER_ACCESS": "Number access",
             "TEMPLATE_ACCESS": "Template access",
             "CALLBACK": "Webhook callback",
@@ -813,7 +813,7 @@
     "WIDGET_FEATURES": "Widget features",
     "TWILIO_HEALTH": {
       "TITLE": "Manage your Twilio number",
-      "DESCRIPTION": "Review the Twilio account, sender and webhooks backing this inbox. Anything Chatwoot cannot receive is flagged here",
+      "DESCRIPTION": "Review the Twilio account, sender and webhooks backing this inbox. Anything Hatif cannot receive is flagged here",
       "GO_TO_SETTINGS": "Go to Twilio Console",
       "NO_DATA": "Health data is not available",
       "LOADING": "Fetching health data from Twilio…",
@@ -893,13 +893,13 @@
           "MISSING_TWIML_APP": "TwiML app not created"
         },
         "HINTS": {
-          "NOT_SET": "Twilio has no webhook on this sender, so nothing reaches Chatwoot.",
+          "NOT_SET": "Twilio has no webhook on this sender, so nothing reaches Hatif.",
           "URL_MISMATCH": "Twilio is calling a different URL, so traffic goes elsewhere.",
-          "WRONG_HTTP_METHOD": "The URL is right but Twilio calls it with {method} instead of POST, and Chatwoot only answers POST.",
+          "WRONG_HTTP_METHOD": "The URL is right but Twilio calls it with {method} instead of POST, and Hatif only answers POST.",
           "OVERRIDDEN_BY_NUMBER": "This messaging service has \"Use webhook on number\" turned on, so Twilio ignores the service webhook.",
           "OVERRIDDEN_BY_APPLICATION": "A TwiML app is attached to this number, and Twilio uses the app's URLs instead of the number's. Detach it in the Twilio Console.",
           "OVERRIDDEN_BY_TRUNK": "This number is attached to a SIP trunk, so Twilio routes calls to the trunk and ignores voice webhooks entirely. Detach the trunk in the Twilio Console.",
-          "MISSING_TWIML_APP": "Chatwoot has no TwiML app for this number, so outbound calls cannot be placed."
+          "MISSING_TWIML_APP": "Hatif has no TwiML app for this number, so outbound calls cannot be placed."
         }
       }
     },

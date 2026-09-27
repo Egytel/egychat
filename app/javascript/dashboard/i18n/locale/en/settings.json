@@ -615,11 +615,11 @@
     "NO_BILLING_USER": "Your billing account is being configured. Please refresh the page and try again.",
     "SHOPIFY": {
       "TITLE": "Billing through Shopify",
-      "DESCRIPTION": "Your Chatwoot subscription is billed and managed securely through Shopify.",
+      "DESCRIPTION": "Your Hatif subscription is billed and managed securely through Shopify.",
       "UNAVAILABLE": "Shopify billing is unavailable right now. Please contact support if this continues.",
       "LOADING": "Checking your Shopify subscription...",
       "PLAN_TITLE": "Shopify subscription",
-      "PLAN_DESCRIPTION": "Choose or manage your Chatwoot plan securely in Shopify.",
+      "PLAN_DESCRIPTION": "Choose or manage your Hatif plan securely in Shopify.",
       "CURRENT_PLAN": "Current plan",
       "SUBSCRIPTION_STATUS": "Status",
       "PRICE": "Price",
