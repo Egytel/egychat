@@ -53,7 +53,7 @@ This table lists **every file that must be touched** — nothing more.
 | 8 | `public/favicon-*.png` (7 files) | Entire files | Replace with your favicon PNGs | 🟢 Very Low |
 | 9 | `public/android-icon-*.png` (6 files) | Entire files | Replace with your Android icons | 🟢 Very Low |
 | 10 | `public/apple-icon*.png` (11 files) | Entire files | Replace with your Apple touch icons | 🟢 Very Low |
-| 11 | `app/javascript/dashboard/i18n/locale/en/login.json` | line 3: `TITLE` | `"Login to Chatwoot"` → `"Login to EgyChat"` | 🟡 Low |
+| 11 | `app/javascript/dashboard/i18n/locale/en/login.json` | line 3: `TITLE` | `"Login to Hatif Chats"` → `"Login to EgyChat"` | 🟡 Low |
 | 12 | `app/javascript/dashboard/i18n/locale/en/signup.json` | line 4: `GET_STARTED` | `"Get started with Chatwoot"` → `"Get started with EgyChat"` | 🟡 Low |
 | 13 | `app/javascript/dashboard/i18n/locale/en/auditLogs.json` | lines 9, 13 | `Chatwoot System` → `EgyChat System` | 🟡 Low |
 | 14 | `app/javascript/dashboard/i18n/locale/en/generalSettings.json` | lines 126, 128, 129, 130 | `Chatwoot` → `EgyChat` | 🟡 Low |

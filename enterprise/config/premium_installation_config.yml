@@ -1,6 +1,6 @@
 # ------- Branding Related Config ------- #
 - name: INSTALLATION_NAME
-  value: 'Hatif Chat'
+  value: 'Hatif'
 - name: LOGO_THUMBNAIL
   value: '/brand-assets/logo_thumbnail.png'
 - name: LOGO
@@ -12,7 +12,7 @@
 - name: WIDGET_BRAND_URL
   value: 'https://egytelecoms.com'
 - name: BRAND_NAME
-  value: 'Hatif Chat'
+  value: 'Hatif'
 - name: TERMS_URL
   value: 'https://egytelecoms.com/en/terms-of-service'
 - name: PRIVACY_URL

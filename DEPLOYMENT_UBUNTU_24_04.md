@@ -174,7 +174,7 @@ Check the web server is listening and responding:
 ss -ltnp | grep :3000          # ruby process listening on 0.0.0.0:3000
 curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000   # -> 302
 curl -s -L http://localhost:3000 | grep -io '<title>[^<]*</title>'
-# -> <title>SuperAdmin | Chatwoot</title>  (onboarding page, HTTP 200)
+# -> <title>SuperAdmin | Hatif</title>  (onboarding page, HTTP 200)
 ```
 
 Confirm the production database was created:
