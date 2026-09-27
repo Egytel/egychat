@@ -132,10 +132,11 @@ app_version() {
 
 # Push must only ever target the private fork.
 assert_private_remote() {
-  local url
+  local url lower
   url="$(git_ remote get-url "$PRIVATE_REMOTE" 2>/dev/null || true)"
   [ -n "$url" ] || die "no '$PRIVATE_REMOTE' remote; cannot push"
-  case "$url" in
+  lower="$(printf '%s' "$url" | tr '[:upper:]' '[:lower:]')"
+  case "$lower" in
     *chatwoot/chatwoot*) die "refusing to push: remote '$PRIVATE_REMOTE' points at the public repo ($url)" ;;
     *egytel/egychat*) : ;;
     *) die "remote '$PRIVATE_REMOTE' is not the expected private fork: $url" ;;
