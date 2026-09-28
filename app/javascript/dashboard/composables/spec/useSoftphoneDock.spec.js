@@ -5,6 +5,7 @@ import {
   SOFTPHONE_STATES,
   buildAuthMessage,
   isAllowedOrigin,
+  normalizeFrameState,
   parseFrameMessage,
   useSoftphoneDock,
 } from '../useSoftphoneDock';
@@ -211,5 +212,81 @@ describe('useSoftphoneDock', () => {
 
     clearSession();
     expect(connectionState.value).toBe(SOFTPHONE_STATES.IDLE);
+  });
+});
+
+describe('normalizeFrameState', () => {
+  it('keeps the vocabulary the dashboard speaks', () => {
+    expect(normalizeFrameState('in_call')).toBe(SOFTPHONE_STATES.IN_CALL);
+    expect(normalizeFrameState('ready')).toBe(SOFTPHONE_STATES.READY);
+  });
+
+  it('understands the words a softphone is likely to use instead', () => {
+    expect(normalizeFrameState('registered')).toBe(SOFTPHONE_STATES.READY);
+    expect(normalizeFrameState('ONLINE')).toBe(SOFTPHONE_STATES.READY);
+    expect(normalizeFrameState('connected')).toBe(SOFTPHONE_STATES.READY);
+    expect(normalizeFrameState('ringing')).toBe(SOFTPHONE_STATES.IN_CALL);
+    expect(normalizeFrameState('unregistered')).toBe(
+      SOFTPHONE_STATES.LOGIN_REQUIRED
+    );
+    expect(normalizeFrameState('logged_out')).toBe(
+      SOFTPHONE_STATES.LOGIN_REQUIRED
+    );
+    expect(normalizeFrameState('failed')).toBe(SOFTPHONE_STATES.ERROR);
+  });
+
+  it('returns null for a word it does not know, so it cannot wipe a good state', () => {
+    expect(normalizeFrameState('warp-speed')).toBeNull();
+    expect(normalizeFrameState('')).toBe(SOFTPHONE_STATES.IDLE);
+    expect(normalizeFrameState(undefined)).toBe(SOFTPHONE_STATES.IDLE);
+  });
+
+  it('does not let an unknown word overwrite what we are already showing', () => {
+    const { reportFrameState, connectionState } = useSoftphoneDock();
+
+    reportFrameState('registered');
+    expect(connectionState.value).toBe(SOFTPHONE_STATES.READY);
+
+    reportFrameState('warp-speed');
+    expect(connectionState.value).toBe(SOFTPHONE_STATES.READY);
+  });
+});
+
+describe('messages relayed up from a nested frame', () => {
+  const frameWindow = { name: 'our-frame' };
+  const options = { frameWindow, allowedOrigins: ALLOWED_ORIGINS };
+  const relayedFrom = (overrides = {}) => ({
+    source: { name: 'the softphone inside the wrapper' },
+    origin: 'https://soft.egytelecoms.com',
+    data: {
+      type: SOFTPHONE_MESSAGES.STATE,
+      state: 'registered',
+      relayed: true,
+    },
+    ...overrides,
+  });
+
+  it('accepts it, so a softphone that lives one frame deeper still reaches the dashboard', () => {
+    expect(parseFrameMessage(relayedFrom(), options)).toEqual({
+      type: SOFTPHONE_MESSAGES.STATE,
+      state: 'registered',
+      relayed: true,
+    });
+  });
+
+  it('refuses it when the origin is not on the allowlist, relayed or not', () => {
+    expect(
+      parseFrameMessage(
+        relayedFrom({ origin: 'https://somewhere.else.test' }),
+        options
+      )
+    ).toBeNull();
+  });
+
+  it('refuses an unmarked message from a window that is not our frame', () => {
+    const unmarked = relayedFrom();
+    delete unmarked.data.relayed;
+
+    expect(parseFrameMessage(unmarked, options)).toBeNull();
   });
 });

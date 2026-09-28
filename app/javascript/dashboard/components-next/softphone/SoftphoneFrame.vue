@@ -4,6 +4,7 @@ import {
   SOFTPHONE_MESSAGES,
   SOFTPHONE_STATES,
   buildAuthMessage,
+  normalizeFrameState,
   parseFrameMessage,
   useSoftphoneDock,
 } from 'dashboard/composables/useSoftphoneDock';
@@ -115,7 +116,7 @@ const handleWindowMessage = event => {
     case SOFTPHONE_MESSAGES.STATE:
       if (
         [SOFTPHONE_STATES.READY, SOFTPHONE_STATES.IN_CALL].includes(
-          message.state
+          normalizeFrameState(message.state)
         )
       ) {
         isAcknowledged.value = true;
