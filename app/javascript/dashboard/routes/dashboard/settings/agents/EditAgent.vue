@@ -6,6 +6,8 @@ import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
+import { useAdmin } from 'dashboard/composables/useAdmin';
 import Auth from '../../../../api/auth';
 import wootConstants from 'dashboard/constants/globals';
 
@@ -38,6 +40,10 @@ const props = defineProps({
     type: Number,
     default: null,
   },
+  softphoneEnabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['close']);
@@ -51,6 +57,10 @@ const agentName = ref(props.name);
 const agentAvailability = ref(props.availability);
 const selectedRoleId = ref(props.customRoleId || props.type);
 const agentCredentials = ref({ email: props.email });
+const agentSoftphoneEnabled = ref(props.softphoneEnabled);
+// Only administrators may grant softphone access; the API ignores the field from
+// anyone else, so the switch is not even rendered for a plain agent.
+const { isAdmin } = useAdmin();
 
 const rules = {
   agentName: { required, minLength: minLength(1) },
@@ -128,6 +138,8 @@ const editAgent = async () => {
       availability: agentAvailability.value,
     };
 
+    if (isAdmin.value) payload.softphone_enabled = agentSoftphoneEnabled.value;
+
     if (selectedRole.value.name.startsWith('custom_')) {
       payload.custom_role_id = selectedRole.value.id;
     } else {
@@ -202,6 +214,25 @@ const resetPassword = async () => {
             {{ $t('AGENT_MGMT.EDIT.FORM.AGENT_AVAILABILITY.ERROR') }}
           </span>
         </label>
+      </div>
+
+      <div v-if="isAdmin" class="w-full">
+        <label>
+          {{ $t('SOFTPHONE_DOCK.AGENT_FORM.LABEL') }}
+          <div class="flex items-center gap-2">
+            <Switch v-model="agentSoftphoneEnabled" />
+            <span class="text-sm text-n-slate-11">
+              {{
+                agentSoftphoneEnabled
+                  ? $t('SOFTPHONE_DOCK.AGENT_FORM.ENABLED')
+                  : $t('SOFTPHONE_DOCK.AGENT_FORM.DISABLED')
+              }}
+            </span>
+          </div>
+        </label>
+        <p class="mt-1 text-xs text-n-slate-10">
+          {{ $t('SOFTPHONE_DOCK.AGENT_FORM.HELP') }}
+        </p>
       </div>
 
       <div class="flex flex-row justify-start w-full gap-2 px-0 py-2">

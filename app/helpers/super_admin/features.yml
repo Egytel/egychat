@@ -150,3 +150,9 @@ shopify:
   enabled: true
   icon: 'icon-shopify'
   config_key: 'shopify'
+softphone:
+  name: 'Softphone dock'
+  description: 'Show the softphone dock inside the dashboard, for the agents you mark.'
+  enabled: true
+  icon: 'icon-settings-2-line'
+  config_key: 'softphone'

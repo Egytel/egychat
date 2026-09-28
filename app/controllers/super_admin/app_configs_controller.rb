@@ -7,6 +7,8 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
     WHATSAPP_APP_ID WHATSAPP_APP_SECRET WHATSAPP_CONFIGURATION_ID WHATSAPP_API_VERSION
     WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY
   ].freeze
+  # Hatif fork: the softphone dock's settings, editable from Super Admin
+  SOFTPHONE_CONFIGS = %w[SOFTPHONE_ENABLED SOFTPHONE_IFRAME_URL SOFTPHONE_ALLOWED_ORIGINS].freeze
   SHOPIFY_CONFIGS = %w[
     ENABLE_SHOPIFY_INTEGRATION
     SHOPIFY_CLIENT_ID
@@ -72,7 +74,8 @@ class SuperAdmin::AppConfigsController < SuperAdmin::ApplicationController
       'whatsapp_embedded' => WHATSAPP_EMBEDDED_CONFIG_KEYS,
       'notion' => %w[NOTION_CLIENT_ID NOTION_CLIENT_SECRET],
       'google' => %w[GOOGLE_OAUTH_CLIENT_ID GOOGLE_OAUTH_CLIENT_SECRET GOOGLE_OAUTH_REDIRECT_URI ENABLE_GOOGLE_OAUTH_LOGIN],
-      'captain' => %w[CAPTAIN_OPEN_AI_API_KEY CAPTAIN_OPEN_AI_MODEL CAPTAIN_OPEN_AI_ENDPOINT]
+      'captain' => %w[CAPTAIN_OPEN_AI_API_KEY CAPTAIN_OPEN_AI_MODEL CAPTAIN_OPEN_AI_ENDPOINT],
+      'softphone' => SOFTPHONE_CONFIGS
     }
 
     @allowed_configs = mapping.fetch(@config, general_configs)

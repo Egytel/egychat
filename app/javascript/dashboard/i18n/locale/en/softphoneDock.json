@@ -1,0 +1,35 @@
+{
+  "SOFTPHONE_DOCK": {
+    "TITLE": "Softphone",
+    "TOGGLE": {
+      "OPEN": "Open the softphone",
+      "CLOSE": "Collapse the softphone"
+    },
+    "STATE": {
+      "idle": "Not connected",
+      "loading": "Connecting…",
+      "ready": "Ready",
+      "login_required": "Sign in needed",
+      "in_call": "On a call",
+      "error": "Unavailable"
+    },
+    "ERRORS": {
+      "softphone_disabled": "The softphone is not enabled for your account. Ask an administrator to turn it on for you.",
+      "softphone_not_configured": "The softphone is not configured on this installation yet.",
+      "rate_limited": "Too many connection attempts. Wait a moment and try again.",
+      "network": "Could not reach the softphone. Check your connection and try again."
+    },
+    "ACTIONS": {
+      "POP_OUT": "Open in a new tab",
+      "RELOAD": "Reload the softphone",
+      "RETRY": "Try again",
+      "RESIZE": "Resize the softphone panel"
+    },
+    "AGENT_FORM": {
+      "LABEL": "Softphone",
+      "HELP": "Give this agent access to the softphone dock in the dashboard.",
+      "ENABLED": "Can use the softphone",
+      "DISABLED": "No softphone access"
+    }
+  }
+}

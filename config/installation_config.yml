@@ -168,6 +168,20 @@
   description: 'Configure this if you want to use a different WhatsApp API version. Make sure its prefixed with `v`'
   value: 'v25.0'
   locked: false
+- name: SOFTPHONE_ENABLED
+  display_title: 'Softphone dock'
+  value: false
+  type: boolean
+  description: 'Show the softphone dock inside the dashboard and allow session tokens to be minted.'
+- name: SOFTPHONE_IFRAME_URL
+  display_title: 'Softphone URL'
+  value: ''
+  description: 'HTTPS URL of the softphone page loaded inside the dashboard dock.'
+- name: SOFTPHONE_ALLOWED_ORIGINS
+  display_title: 'Softphone allowed origins'
+  value: ''
+  description: 'Space or comma separated https origins allowed to exchange messages with the dashboard (e.g. https://soft.egytelecoms.com).'
+
 - name: WHATSAPP_WEBHOOK_MANAGED_EXTERNALLY
   display_title: 'WhatsApp Webhook Managed Externally'
   description: 'Enable when a centralized endpoint receives Meta webhooks and forwards them to Chatwoot, so the Meta callback URL is not expected to match this installation URL.'
@@ -602,17 +616,3 @@
   value: 'https://us.cloud.langfuse.com'
   locked: false
 ## ---- End of LLM Observability ---- ##
-
-- name: SOFTPHONE_ENABLED
-  display_title: 'Softphone dock'
-  value: false
-  type: boolean
-  description: 'Show the softphone dock inside the dashboard and allow session tokens to be minted.'
-- name: SOFTPHONE_IFRAME_URL
-  display_title: 'Softphone URL'
-  value: ''
-  description: 'HTTPS URL of the softphone page loaded inside the dashboard dock.'
-- name: SOFTPHONE_ALLOWED_ORIGINS
-  display_title: 'Softphone allowed origins'
-  value: ''
-  description: 'Space or comma separated https origins allowed to exchange messages with the dashboard (e.g. https://soft.egytelecoms.com).'

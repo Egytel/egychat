@@ -290,6 +290,7 @@ const confirmDeletion = () => {
         :type="currentAgent.role"
         :email="currentAgent.email"
         :availability="currentAgent.availability_status"
+        :softphone-enabled="currentAgent.softphone_enabled === true"
         :custom-role-id="currentAgent.custom_role_id"
         @close="hideEditPopup"
       />

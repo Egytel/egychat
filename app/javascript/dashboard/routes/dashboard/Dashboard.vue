@@ -20,6 +20,9 @@ const CommandBar = defineAsyncComponent(
 const FloatingCallWidget = defineAsyncComponent(
   () => import('dashboard/components-next/call/FloatingCallWidget.vue')
 );
+const SoftphoneDock = defineAsyncComponent(
+  () => import('dashboard/components-next/softphone/SoftphoneDock.vue')
+);
 
 import CopilotLauncher from 'dashboard/components-next/copilot/CopilotLauncher.vue';
 import CopilotContainer from 'dashboard/components/copilot/CopilotContainer.vue';
@@ -37,6 +40,7 @@ export default {
     CopilotLauncher,
     CopilotContainer,
     FloatingCallWidget,
+    SoftphoneDock,
     MobileSidebarLauncher,
   },
   setup() {
@@ -161,6 +165,7 @@ export default {
         />
         <CopilotContainer />
         <FloatingCallWidget v-if="hasActiveCall || hasIncomingCall" />
+        <SoftphoneDock />
       </template>
       <CommandBar :is-paywalled="isAccountPaywalled" />
       <AddAccountModal

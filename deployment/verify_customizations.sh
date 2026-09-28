@@ -69,6 +69,23 @@ else
   fail "the softphone_enabled migration is missing"
 fi
 
+echo "== Softphone dock UI (phase 2) =="
+grep_present app/javascript/dashboard/components-next/softphone/SoftphoneDock.vue 'softphone-dock' "the dock component is present"
+grep_present app/javascript/dashboard/components-next/softphone/SoftphoneDock.vue 'softphone_enabled' "the dock only renders for a marked agent"
+grep_present app/javascript/dashboard/components-next/softphone/SoftphoneDock.vue 'updateUISettings' "the dock remembers its open state per user"
+grep_present app/javascript/dashboard/components-next/softphone/SoftphoneFrame.vue 'hatif_token' "the frame hands the token over in the url fragment"
+grep_present app/javascript/dashboard/components-next/softphone/SoftphoneFrame.vue 'allow="microphone' "the frame is allowed to use the microphone"
+grep_present app/javascript/dashboard/composables/useSoftphoneDock.js 'hatif:auth' "the bridge knows the softphone messages"
+grep_present app/javascript/dashboard/composables/useSoftphoneDock.js 'isAllowedOrigin' "the bridge checks the origin allowlist"
+grep_present app/javascript/dashboard/api/softphone.js 'session' "the session api client is present"
+grep_present app/javascript/dashboard/routes/dashboard/Dashboard.vue 'SoftphoneDock' "the layout mounts the dock"
+grep_present app/javascript/dashboard/routes/dashboard/settings/agents/EditAgent.vue 'softphone_enabled' "the agent form carries the softphone switch"
+grep_present app/javascript/dashboard/routes/dashboard/settings/agents/EditAgent.vue 'isAdmin' "the switch is administrator-only"
+grep_present app/javascript/dashboard/i18n/locale/en/index.js 'softphoneDock' "the softphone locale file is registered"
+grep_present app/helpers/super_admin/features.yml 'softphone' "Super Admin has a softphone settings card"
+grep_present app/controllers/super_admin/app_configs_controller.rb 'SOFTPHONE_CONFIGS' "Super Admin can edit the softphone settings"
+grep_present config/installation_config.yml 'SOFTPHONE_ALLOWED_ORIGINS' "the softphone settings are defined as installation configs"
+
 echo "== Branding =="
 file_differs_from_upstream public/brand-assets/logo.svg "Hatif logo.svg differs from upstream"
 file_differs_from_upstream public/brand-assets/logo_dark.svg "Hatif logo_dark.svg differs from upstream"
