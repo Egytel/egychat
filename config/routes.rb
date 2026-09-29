@@ -277,9 +277,9 @@ Rails.application.routes.draw do
           if ChatwootApp.enterprise?
             resources :calls, only: [:index]
 
-          namespace :softphone do
-            resource :session, only: [:create], controller: 'sessions'
-          end
+            namespace :softphone do
+              resource :session, only: [:create], controller: 'sessions'
+            end
             resources :whatsapp_calls, only: [:show] do
               member do
                 post :accept
@@ -599,6 +599,13 @@ Rails.application.routes.draw do
 
   # ----------------------------------------------------------------------
   # Routes for platform APIs
+  # Call events pushed by the PBX, signed with the account's pairing secret. Deliberately outside
+  # /api/v1/accounts/... : the caller has no Chatwoot user session, so the signature is the
+  # authentication (see Softphone::EventsController).
+  namespace :softphone do
+    post 'events', to: 'events#create'
+  end
+
   namespace :platform, defaults: { format: 'json' } do
     namespace :api do
       namespace :v1 do
@@ -618,6 +625,13 @@ Rails.application.routes.draw do
             end
           end
           resources :email_channel_migrations, only: [:create]
+
+          # Softphone / PBX wiring, per account. Secrets are write-only on this endpoint: they are
+          # returned by create and rotate only, never by show or update.
+          resource :softphone_connection, only: %i[show create update destroy],
+                                          controller: 'softphone_connections' do
+            post :rotate
+          end
         end
       end
     end
@@ -741,6 +755,9 @@ Rails.application.routes.draw do
       resources :accounts, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
         post :seed, on: :member
         post :reset_cache, on: :member
+        # per-account softphone/PBX pairing (see app/views/super_admin/accounts/_softphone_connection)
+        post :softphone_connection, on: :member
+        post :rotate_softphone_connection, on: :member
       end
       resources :users, only: [:index, :new, :create, :show, :edit, :update, :destroy] do
         delete :avatar, on: :member, action: :destroy_avatar

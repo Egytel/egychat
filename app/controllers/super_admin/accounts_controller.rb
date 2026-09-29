@@ -52,6 +52,58 @@ class SuperAdmin::AccountsController < SuperAdmin::ApplicationController
   # See https://administrate-prototype.herokuapp.com/customizing_controller_actions
   # for more information
 
+  # Save the per-account softphone pairing. The form can paste a secret (it has to match the box) or
+  # leave it blank to keep the current one; nothing here ever displays a stored secret, only a
+  # fingerprint, and rotation deliberately shows the new value exactly once (see the show-once cache).
+  def softphone_connection
+    account = requested_resource
+    row = Softphone::Connection.find_or_initialize_by(account_id: account.id)
+    submitted = params.require(:softphone_connection).permit(:enabled, :pbx_url, :widget_path, :account_key, :secret)
+
+    assign_softphone_fields(row, submitted)
+    row.account_key ||= "acct-#{SecureRandom.hex(4)}"
+    row.secret ||= Softphone::Connection.generate_secret
+    row.save!
+
+    # rubocop:disable Rails/I18nLocaleTexts -- matches the rest of the super admin controllers
+    redirect_back fallback_location: [namespace, account], notice: 'Softphone connection saved'
+    # rubocop:enable Rails/I18nLocaleTexts
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_back fallback_location: [namespace, account], alert: "Could not save: #{e.record.errors.full_messages.to_sentence}"
+  end
+
+  def assign_softphone_fields(row, submitted)
+    row.enabled = submitted[:enabled].present?
+    row.pbx_url = submitted[:pbx_url] if submitted[:pbx_url].present?
+    row.widget_path = submitted[:widget_path] if submitted[:widget_path].present?
+    row.account_key = submitted[:account_key] if submitted[:account_key].present?
+    row.secret = submitted[:secret] if submitted[:secret].present?
+  end
+
+  # Mint a fresh secret and park it for one render so the operator can copy it. It is never persisted
+  # anywhere readable: the card shows it once and deletes it.
+  def rotate_softphone_connection
+    account = requested_resource
+    secret = Softphone::Connection.generate_secret
+    row = Softphone::Connection.find_or_initialize_by(account_id: account.id)
+    row.pbx_url ||= 'https://'
+    row.account_key ||= "acct-#{SecureRandom.hex(4)}"
+    row.secret = secret
+    row.tokens_verified_at = nil
+    row.events_verified_at = nil
+    row.save!
+
+    Rails.cache.write(show_once_key(account), secret, expires_in: 5.minutes)
+
+    # rubocop:disable Rails/I18nLocaleTexts -- matches the rest of the super admin controllers
+    redirect_back fallback_location: [namespace, account], notice: 'New secret generated - copy it now, it is shown once.'
+    # rubocop:enable Rails/I18nLocaleTexts
+  end
+
+  def show_once_key(account)
+    "softphone:show_once:#{account.id}"
+  end
+
   def seed
     Internal::SeedAccountJob.perform_later(requested_resource)
     # rubocop:disable Rails/I18nLocaleTexts

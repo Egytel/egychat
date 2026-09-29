@@ -1,0 +1,155 @@
+<%# The per-account softphone pairing, on the account page in the top-admin panel.
+    #
+    # The fields carry their exact expected shape as placeholders, because every one of these values
+    # has to match something on the Laravel box and a near-miss is a confusing failure much later:
+    # the URL and key must match what the box holds, and the secret is the same value in both places. %>
+<% connection = Softphone::Connection.find_by(account_id: page.resource.id) %>
+<%# a freshly rotated secret, readable exactly once: read here, then forget it %>
+<% show_once_key = "softphone:show_once:#{page.resource.id}" %>
+<% show_once = Rails.cache.read(show_once_key) %>
+<% Rails.cache.delete(show_once_key) if show_once.present? %>
+<% fingerprint = connection&.secret_fingerprint %>
+<section class="main-content__body">
+  <hr/>
+  <h2>Softphone / PBX connection</h2>
+  <p>
+    Which Laravel/Asterisk box this account's agents dial through. Chatwoot authenticates to the box
+    server-to-server with the <strong>account key</strong> and <strong>secret</strong> below and names the
+    agent by email; the box then serves its own softphone page, already provisioned for that agent, and
+    the phone registers. No SIP credential passes through Chatwoot.
+  </p>
+
+  <%= form_for([:softphone_connection, namespace, page.resource], method: :post, html: { class: "form" }) do |f| %>
+    <fieldset class="field-unit field-unit--string">
+      <div class="field-unit__label"><label for="softphone_enabled">Enabled</label></div>
+      <div class="field-unit__field">
+        <%= check_box_tag 'softphone_connection[enabled]', '1', connection.nil? || connection.enabled?, id: 'softphone_enabled' %>
+        <span class="field-unit__hint">Unticked: this account falls back to the installation-wide softphone settings.</span>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-unit field-unit--string">
+      <div class="field-unit__label">
+        <label for="softphone_pbx_url">PBX URL</label>
+      </div>
+      <div class="field-unit__field">
+        <input type="text" id="softphone_pbx_url" name="softphone_connection[pbx_url]"
+               value="<%= connection&.pbx_url %>"
+               placeholder="https://997.c6.egytelecoms.com"
+               pattern="https://.*" required />
+        <span class="field-unit__hint">
+          Origin only: <code>https</code>, the host, and a port if it is not 443. No trailing slash,
+          no path. Example: <code>https://997.c6.egytelecoms.com</code>
+        </span>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-unit field-unit--string">
+      <div class="field-unit__label">
+        <label for="softphone_widget_path">Softphone page path</label>
+      </div>
+      <div class="field-unit__field">
+        <input type="text" id="softphone_widget_path" name="softphone_connection[widget_path]"
+               value="<%= connection&.widget_path || '/dashboard/phone-widget' %>"
+               placeholder="/dashboard/phone-widget" />
+        <span class="field-unit__hint">
+          Leading slash, no trailing slash. The agent-login endpoint is derived from it, so this value
+          means <code>&lt;PBX URL&gt;/dashboard/phone-widget</code> for the page and
+          <code>&lt;PBX URL&gt;/dashboard/phone-widget/agent-login</code> for the server-to-server call.
+        </span>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-unit field-unit--string">
+      <div class="field-unit__label">
+        <label for="softphone_account_key">Account key</label>
+      </div>
+      <div class="field-unit__field">
+        <input type="text" id="softphone_account_key" name="softphone_connection[account_key]"
+               value="<%= connection&.account_key %>"
+               placeholder="acct-egytel" />
+        <span class="field-unit__hint">
+          Free-form label for this pairing; it must equal <code>CHATWOOT_ACCOUNT_KEY</code> on the box.
+          Lowercase and hyphens by convention, e.g. <code>acct-egytel</code>.
+        </span>
+      </div>
+    </fieldset>
+
+    <fieldset class="field-unit field-unit--string">
+      <div class="field-unit__label">
+        <label for="softphone_secret">Secret</label>
+      </div>
+      <div class="field-unit__field">
+        <input type="password" id="softphone_secret" name="softphone_connection[secret]"
+               value="" autocomplete="new-password"
+               placeholder="64 hex characters, e.g. 0f3a9c1d…" />
+        <span class="field-unit__hint">
+          The same value on both sides, matching <code>CHATWOOT_SECRET</code> on the box. Leave blank to
+          keep the current secret<% if fingerprint.present? %> (fingerprint <code><%= fingerprint %></code>)<% end %>.
+          Generate one with <code>openssl rand -hex 32</code> here, then paste it into the box's
+          <code>.env</code> — or &#8220;Generate + show once&#8221; below to have Chatwoot mint it.
+        </span>
+        <p>
+          <%= link_to 'Generate + show once', rotate_softphone_connection_super_admin_account_path(page.resource),
+                      method: :post,
+                      data: { confirm: 'This replaces the secret for this pairing. The box must be updated with the new value or agents cannot start the softphone.' },
+                      class: 'button' %>
+        </p>
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <input type="submit" value="Save softphone connection" />
+    </div>
+  <% end %>
+
+  <% if show_once.present? %>
+    <div class="flash flash-alert" style="padding:1rem;border:1px solid #b45309;background:#fef3c7">
+      <strong>New secret (shown once)</strong>
+      <p>Paste this into the box's <code>.env</code> as <code>CHATWOOT_SECRET</code>, then restart its config cache.
+         It will not be shown again.</p>
+      <pre style="user-select:all"><%= show_once %></pre>
+    </div>
+  <% end %>
+
+  <h3>Current state</h3>
+  <% if connection.nil? %>
+    <p>No pairing yet: this account uses the installation-wide softphone settings.</p>
+  <% else %>
+    <table>
+      <tbody>
+        <tr><td>Secret</td><td><%= connection.secret.present? ? "set (fingerprint #{connection.secret_fingerprint})" : 'not set' %></td></tr>
+        <tr><td>Usable</td><td><%= connection.usable? %></td></tr>
+        <tr><td>Page the dock frames</td><td><code><%= connection.widget_url %></code></td></tr>
+        <tr><td>Allowed origin</td><td><code><%= connection.origin %></code></td></tr>
+        <tr><td>Token check</td><td><%= connection.tokens_verified_at || 'never tested' %></td></tr>
+        <tr><td>Events check</td><td><%= connection.events_verified_at || 'never tested' %></td></tr>
+        <tr><td>Last error</td><td><%= connection.last_error || 'none' %></td></tr>
+      </tbody>
+    </table>
+  <% end %>
+
+  <h3>Filling these from another application</h3>
+  <p>The same values are on the Platform API, so provisioning does not have to be done by hand:</p>
+<pre>
+GET     /platform/api/v1/accounts/&lt;account_id&gt;/softphone_connection
+POST    /platform/api/v1/accounts/&lt;account_id&gt;/softphone_connection
+PATCH   /platform/api/v1/accounts/&lt;account_id&gt;/softphone_connection
+DELETE  /platform/api/v1/accounts/&lt;account_id&gt;/softphone_connection
+POST    /platform/api/v1/accounts/&lt;account_id&gt;/softphone_connection/rotate
+
+Header: api_access_token: &lt;platform app token&gt;
+
+{
+  "pbx_url":     "https://997.c6.egytelecoms.com",
+  "widget_path": "/dashboard/phone-widget",
+  "account_key": "acct-egytel",
+  "secret":      "&lt;64 hex characters&gt;",
+  "enabled":     true
+}
+</pre>
+  <p>
+    Reads never return the secret, only its fingerprint, so it cannot be harvested with a leaked token.
+    <code>rotate</code> returns a new one exactly once.
+  </p>
+</section>
