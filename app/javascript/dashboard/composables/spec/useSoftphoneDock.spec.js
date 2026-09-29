@@ -136,7 +136,9 @@ describe('buildAuthMessage', () => {
       type: SOFTPHONE_MESSAGES.AUTH,
       token: 'jwt',
       accountId: 2,
-      agent: { id: 3, email: 'c2agent1@egytelecoms.com' },
+      // normalized to primitives with every field present: the session object is a Vue ref, and a
+      // reactive proxy cannot be handed to postMessage (structured clone throws DataCloneError)
+      agent: { id: 3, name: '', email: 'c2agent1@egytelecoms.com' },
     });
   });
 });
