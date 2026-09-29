@@ -38,12 +38,22 @@ let deliveryTimer = null;
  * login hop: whoever ends up rendering the page has it in `location.hash`. Later tokens (the
  * refresh, which happens on the page we are already talking to) go over postMessage.
  */
+// The phone holds its own session once the page has loaded, so this value must never change
+// after the first render: a session refresh would otherwise re-point the iframe and reload the
+// page, which drops the SIP registration.
+let frozenUrl = '';
 const frameSrc = computed(() => {
+  if (frozenUrl) return frozenUrl;
+
   const base = props.url || session.value?.softphone_url;
   if (!base) return '';
 
   const token = pendingToken || session.value.token;
-  return token ? `${base}#hatif_token=${encodeURIComponent(token)}` : base;
+
+  // frozen once, complete: the pairing url carries its one-time handoff, the legacy path its token
+  frozenUrl = token ? `${base}#hatif_token=${encodeURIComponent(token)}` : base;
+
+  return frozenUrl;
 });
 
 const frameWindow = () => iframeRef.value?.contentWindow;
@@ -53,8 +63,17 @@ const postAuth = () => {
   if (!target || !session.value?.token) return;
   if (!allowedOrigins.value.length) return;
 
-  const message = buildAuthMessage(session.value);
-  allowedOrigins.value.forEach(origin => target.postMessage(message, origin));
+  // Structure-clone-safe copy (the session object is a Vue ref, so its nested values are proxies
+  // that postMessage refuses to clone), and a messaging failure must not become an unhandled error.
+  const message = JSON.parse(JSON.stringify(buildAuthMessage(session.value)));
+  allowedOrigins.value.forEach(origin => {
+    try {
+      target.postMessage(message, origin);
+    } catch (error) {
+      // eslint-disable-next-line no-console -- a dropped token must be debuggable
+      console.error('[softphone] token handover failed', error);
+    }
+  });
 };
 
 const clearRefreshTimer = () => {
@@ -70,6 +89,10 @@ const refreshToken = async () => {
 
 // Chatwoot's token lives two minutes; ask for a fresh one well before the softphone needs it.
 const scheduleRefresh = () => {
+  // nothing to refresh when the page was opened with a one-time handoff: it holds its own
+  // session from here on
+  if (!session.value?.token) return;
+
   const lifetime = (session.value?.expires_in || 120) * 1000;
   clearRefreshTimer();
   refreshTimer = setTimeout(
@@ -109,6 +132,7 @@ const handleWindowMessage = event => {
       break;
     case SOFTPHONE_MESSAGES.AUTH_RESULT:
       if (message.ok) isAcknowledged.value = true;
+      clearRefreshTimer();
       reportFrameState(
         message.ok ? SOFTPHONE_STATES.READY : SOFTPHONE_STATES.LOGIN_REQUIRED
       );
@@ -120,6 +144,7 @@ const handleWindowMessage = event => {
         )
       ) {
         isAcknowledged.value = true;
+        clearRefreshTimer();
       }
       reportFrameState(message.state || SOFTPHONE_STATES.IDLE, message.error);
       break;

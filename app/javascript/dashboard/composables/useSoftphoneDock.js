@@ -100,18 +100,58 @@ const originOf = value => {
  * trailing slash in the config or a lookalike host (soft.example.com.evil.com) cannot slip
  * through.
  */
+// Every instance we run sits under one registrable domain, so an exact-origin list was more brittle
+// than it needed to be. Mirrors the server's rule: https, and our own domain or a subdomain of it.
+export const TRUSTED_DOMAIN = 'egytelecoms.com';
+
+export const isTrustedDomain = origin => {
+  const candidate = originOf(origin);
+  if (!candidate || !candidate.startsWith('https://')) return false;
+
+  let parsed;
+  try {
+    parsed = new URL(candidate);
+  } catch {
+    return false;
+  }
+
+  // default port only: a pairing on a non-default port is still fine, it just has to come from the
+  // server's exact list rather than from this rule
+  if (parsed.port && parsed.port !== '443') return false;
+
+  const host = parsed.hostname.toLowerCase();
+
+  return host === TRUSTED_DOMAIN || host.endsWith(`.${TRUSTED_DOMAIN}`);
+};
+
 export const isAllowedOrigin = (origin, allowedOrigins = []) => {
   const candidate = originOf(origin);
   if (!candidate) return false;
 
-  return allowedOrigins.map(originOf).filter(Boolean).includes(candidate);
+  if (allowedOrigins.map(originOf).filter(Boolean).includes(candidate))
+    return true;
+
+  return candidate.startsWith('https://') && isTrustedDomain(candidate);
 };
 
-export const buildAuthMessage = ({ token, account_id: accountId, agent }) => ({
-  type: SOFTPHONE_MESSAGES.AUTH,
+export const buildAuthMessage = ({
   token,
-  accountId,
-  agent,
+  account_id: accountId,
+  agent = null,
+}) => ({
+  type: SOFTPHONE_MESSAGES.AUTH,
+  token: token || '',
+  accountId: accountId ?? null,
+  // Primitives only, on purpose: this object comes off a Vue ref, so `agent` would be a reactive
+  // proxy, and structured clone (what postMessage uses) cannot clone a Proxy - it throws
+  // DataCloneError and the token never reaches the softphone.
+  agent: agent
+    ? {
+        id: agent.id ?? null,
+        name: agent.name || '',
+        email: agent.email || '',
+      }
+    : null,
 });
 
 const parsePayload = data => {
